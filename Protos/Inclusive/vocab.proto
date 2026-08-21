@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package vocab;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service VocabService {
+  rpc ReviewCard (ReviewRequest) returns (ReviewResponse) {}
+  rpc AnalyzeText (AnalyzeTextRequest) returns (AnalyzeTextResponse) {}
+  rpc AnalyzeTargetWord (AnalyzeTargetWordRequest) returns (AnalyzeTargetWordResponse) {}
+}
+
+message ReviewRequest {
+  Card card = 1;
+  int32 quality = 2;
+  google.protobuf.Int32Value review_duration = 3;
+  // Настройки FSRS проекта: при наличии inclusive создаёт Scheduler с ними (py-fsrs).
+  google.protobuf.DoubleValue request_retention = 4;
+  google.protobuf.Int32Value maximum_interval = 5;
+  repeated double w = 6;  // Веса FSRS (17 или 21 в зависимости от версии). Пусто = дефолты py-fsrs.
+  // Момент ревью (UTC), как в Anki — для офлайн/синка; не задан = сервер на стороне inclusive берёт now.
+  optional google.protobuf.Timestamp review_at = 7;
+  // Как в Anki / py-fsrs Scheduler: пустые repeated = дефолты библиотеки (1m+10m / 10m)
+  repeated int32 learning_steps_seconds = 8;
+  repeated int32 relearning_steps_seconds = 9;
+  optional bool enable_fuzzing = 10;
+}
+
+message ReviewResponse {
+  Card card = 1;
+  ReviewLog review_log = 2;
+}
+
+// state=0 (NEW) -> inclusive maps to py-fsrs Learning on first review; step required for learning ladder.
+message Card {
+  int32 state = 1;
+  google.protobuf.Int32Value step = 2;
+  google.protobuf.FloatValue stability = 3;
+  google.protobuf.FloatValue difficulty = 4;
+  google.protobuf.Timestamp due = 5;
+  google.protobuf.Timestamp last_review = 6;
+}
+
+message ReviewLog {
+  int32 rating = 2;
+  google.protobuf.Timestamp review_datetime = 3;
+  google.protobuf.Int32Value review_duration = 4;
+}
+
+message AnalyzeTextRequest {
+  string text = 1;
+}
+
+message AnalyzeTextResponse {
+  repeated NlpToken tokens = 1;
+}
+
+message AnalyzeTargetWordRequest {
+  string sentence = 1;
+  string target_word = 2;
+}
+
+message AnalyzeTargetWordResponse {
+  string lemma = 1;
+  google.protobuf.StringValue pos_tag = 2;
+}
+
+message NlpToken {
+  string text = 1;
+  google.protobuf.StringValue lemma = 2;
+  TokenType type = 3;
+  google.protobuf.StringValue pos_tag = 4;
+}
+
+enum TokenType {
+  WORD = 0;
+  SPACE = 1;
+  PUNCTUATION = 2;
+}

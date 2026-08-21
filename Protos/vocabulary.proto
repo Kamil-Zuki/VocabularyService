@@ -1,0 +1,1874 @@
+syntax = "proto3";
+
+package pvs.content.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "Pvs.Content.Grpc";
+
+// ============================================================================
+// Service Definition
+// ============================================================================
+
+service ContentService {
+  // --------------------------------------------------------------------------
+  // Projects (SR-STR-01, SR-STR-02)
+  // --------------------------------------------------------------------------
+  
+  // Создание нового языкового проекта (SR-STR-01)
+  rpc CreateProject (CreateProjectRequest) returns (ProjectResponse);
+
+  // Получение списка проектов пользователя (SR-STR-01)
+  rpc GetProjects (GetProjectsRequest) returns (GetProjectsResponse);
+
+  // Получение деталей проекта и настроек SRS (SR-STR-02)
+  rpc GetProjectDetails (GetProjectDetailsRequest) returns (ProjectResponse);
+
+  // Обновление настроек проекта (SR-STR-02)
+  rpc UpdateProject (UpdateProjectRequest) returns (ProjectResponse);
+
+  // Удаление проекта и каскадное уничтожение его данных
+  rpc DeleteProject (DeleteProjectRequest) returns (google.protobuf.Empty);
+
+  // Получение статистики потраченных лимитов пользователя
+  rpc GetUserUsageStats (GetUserUsageStatsRequest) returns (GetUserUsageStatsResponse);
+
+
+  // --------------------------------------------------------------------------
+  // User Settings (SR-SETT-01)
+  // --------------------------------------------------------------------------
+
+  // Получение глобальных настроек (SR-SETT-01)
+  rpc GetUserSettings (GetUserSettingsRequest) returns (UserSettingsResponse);
+
+  // Обновление глобальных настроек (SR-SETT-01)
+  rpc UpdateUserSettings (UpdateUserSettingsRequest) returns (UserSettingsResponse);
+
+
+  // --------------------------------------------------------------------------
+  // Decks (SR-STR-03, SR-VOC-01, SR-BG-02)
+  // --------------------------------------------------------------------------
+
+  // Получение дерева колод (SR-STR-03)
+  rpc GetDeckTree (GetDeckTreeRequest) returns (GetDeckTreeResponse);
+
+  // Получение детальной информации о колоде (Id, Title, Description, Stats, ParentDeckId)
+  rpc GetDeckDetail (GetDeckDetailRequest) returns (GetDeckDetailResponse);
+
+  // Создание колоды (SR-VOC-01)
+  rpc CreateDeck (CreateDeckRequest) returns (DeckResponse);
+
+  // Обновление колоды (SR-VOC-01)
+  rpc UpdateDeck (UpdateDeckRequest) returns (DeckResponse);
+
+  // Удаление колоды (SR-BG-02)
+  rpc DeleteDeck (DeleteDeckRequest) returns (google.protobuf.Empty);
+}
+
+service CardService {
+  // Создание карточки вручную (SR-VOC-01)
+  rpc CreateCard (CreateCardRequest) returns (CardResponse);
+
+  // Проверка наличия карточек с той же леммой в проекте (SR-VOC-05)
+  rpc CheckCardDuplicates (CheckCardDuplicatesRequest) returns (CheckCardDuplicatesResponse);
+
+  // Захват карточки из расширения (SR-API-01)
+  rpc CaptureCard (CaptureCardRequest) returns (CardResponse);
+
+  // Получение карточки по ID
+  rpc GetCard (GetCardRequest) returns (CardResponse);
+
+  // Обновление карточки (SR-VOC-02)
+  rpc UpdateCard (UpdateCardRequest) returns (CardResponse);
+
+  // Удаление карточки
+  rpc DeleteCard (DeleteCardRequest) returns (google.protobuf.Empty);
+
+  // Полнотекстовый поиск (SR-SRC-01)
+  rpc SearchCards (SearchCardsRequest) returns (SearchCardsResponse);
+
+  // Список карточек в колоде
+  rpc GetCardsByDeck (GetCardsByDeckRequest) returns (GetCardsByDeckResponse);
+
+  // Массовое создание карточек (Импорт SR-VOC-03)
+  rpc BulkCreateCards (BulkCreateCardsRequest) returns (BulkCreateCardsResponse);
+
+  // Старт фоновой задачи импорта из файла (.apkg, .csv, .tsv)
+  rpc StartImportJob (StartImportJobRequest) returns (StartImportJobResponse);
+
+  // Получение статуса фоновой задачи импорта
+  rpc GetImportJobStatus (GetImportJobStatusRequest) returns (GetImportJobStatusResponse);
+
+
+  // Приостановка обучения карточки (SR-VOC-04)
+  rpc SuspendCard (SuspendCardRequest) returns (google.protobuf.Empty);
+
+  // Возобновление обучения карточки (SR-VOC-04)
+  rpc UnsuspendCard (UnsuspendCardRequest) returns (google.protobuf.Empty);
+
+  // Получение облегченных превью карточек (SR-MKT-02)
+  rpc GetCardPreviews (GetCardPreviewsRequest) returns (GetCardPreviewsResponse);
+
+  // Массовое удаление карточек
+  rpc BulkDeleteCards (BulkDeleteCardsRequest) returns (google.protobuf.Empty);
+
+  // Перемещение карточек между колодами
+  rpc MoveCards (MoveCardsRequest) returns (google.protobuf.Empty);
+
+  // Сброс прогресса карточек (FSRS)
+  rpc ResetCardProgress (ResetCardProgressRequest) returns (google.protobuf.Empty);
+
+  // Список сложных (leech) карточек
+  rpc GetLeechCards (GetLeechCardsRequest) returns (GetLeechCardsResponse);
+
+  // Список карточек без медиа
+  rpc GetCardsMissingMedia (GetCardsMissingMediaRequest) returns (GetCardsMissingMediaResponse);
+
+  // Загрузка изображения в хранилище (для редактора карточек: буфер / файл)
+  rpc UploadImage (UploadImageRequest) returns (UploadImageResponse);
+
+  // Загрузка PDF-документа в хранилище (для Reader)
+  rpc UploadDocument (UploadDocumentRequest) returns (UploadDocumentResponse);
+
+  // Получение URL изображения по ID (для отдачи через Aggregator)
+  rpc GetImageUrl (GetImageUrlRequest) returns (GetImageUrlResponse);
+
+  // Редактор: тип заметки Anki-like + шаблоны для динамических полей
+  rpc GetNoteTypeForEditor (GetNoteTypeForEditorRequest) returns (GetNoteTypeForEditorResponse);
+}
+
+service TermService {
+  rpc CreateOrUpdateTerm (CreateOrUpdateTermRequest) returns (TermDetailsResponse);
+  rpc MarkTermKnown (TermActionRequest) returns (TermDetailsResponse);
+  rpc IgnoreTerm (TermActionRequest) returns (TermDetailsResponse);
+  rpc BulkMarkKnown (BulkMarkKnownRequest) returns (BulkMarkKnownResponse);
+  rpc GetTermDetails (GetTermDetailsRequest) returns (TermDetailsResponse);
+  rpc SearchTermDuplicates (SearchTermDuplicatesRequest) returns (SearchTermDuplicatesResponse);
+  // Список терминов проекта для пользователя (cursor по UpdatedAt DESC, TermId ASC)
+  rpc ListProjectTerms (ListProjectTermsRequest) returns (ListProjectTermsResponse);
+  // Удаление демо-карточек импорта (Automation IMPORT job)
+  rpc PurgeDemoImport (PurgeDemoImportRequest) returns (PurgeDemoImportResponse);
+}
+
+service StudyService {
+  // --------------------------------------------------------------------------
+  // Study Session Management (SR-LRN-01, SR-LRN-02, SR-LRN-03, SR-LRN-08)
+  // --------------------------------------------------------------------------
+
+  // Старт новой сессии обучения (SR-LRN-01)
+  rpc StartStudySession (StartStudySessionRequest) returns (StartStudySessionResponse);
+
+  // Получение следующей карточки (SR-LRN-02)
+  rpc GetNextCard (GetNextCardRequest) returns (GetNextCardResponse);
+
+  // Отправка оценки (FSRS) (SR-LRN-03)
+  rpc SubmitReview (SubmitReviewRequest) returns (SubmitReviewResponse);
+
+  // Отмена последнего действия (SR-LRN-08)
+  rpc UndoReview (UndoReviewRequest) returns (UndoReviewResponse);
+}
+
+// ============================================================================
+// Service Definition
+// ============================================================================
+
+service LessonService {
+  rpc GetLessons (GetLessonsRequest) returns (GetLessonsResponse);
+  rpc GetLesson (GetLessonRequest) returns (GetLessonResponse);
+  rpc StartLesson (StartLessonRequest) returns (StartLessonResponse);
+  rpc CompleteLesson (CompleteLessonRequest) returns (google.protobuf.Empty);
+  rpc SetPlacementLevel (SetPlacementLevelRequest) returns (google.protobuf.Empty);
+  rpc SubmitKnowledgeCheckResult (SubmitKnowledgeCheckResultRequest) returns (google.protobuf.Empty);
+}
+
+// ============================================================================
+// Enums & Shared Types
+// ============================================================================
+
+enum SrsStatus {
+  SRS_STATUS_NEW = 0;
+  SRS_STATUS_LEARNING = 1;
+  SRS_STATUS_REVIEW = 2;
+  // Устарело: в FSRS/py-fsrs состояние 3 — Relearning, не «mature». Используйте SRS_STATUS_RELEARNING.
+  SRS_STATUS_MATURE = 3;
+  // Как в Anki / py-fsrs State.Relearning (после Again из Review).
+  SRS_STATUS_RELEARNING = 4;
+}
+
+message TargetIndex {
+  int32 start = 1;
+  int32 len = 2;
+}
+
+message CardMedia {
+  google.protobuf.StringValue image_id = 1;
+  google.protobuf.StringValue audio_id = 2;
+  string image_url = 3;  // URL for browser/display (filled after FillCardMediaUrlsAsync)
+  string audio_url = 4;
+}
+
+message SourceMeta {
+  string type = 1;
+  string title = 2;
+  google.protobuf.StringValue url = 3;
+  google.protobuf.Int32Value page = 4;
+  google.protobuf.Int32Value timestamp = 5;
+  google.protobuf.StringValue service = 6;
+}
+
+message NoteFieldValuePayload {
+  google.protobuf.StringValue string_value = 1;
+  repeated string string_values = 2;
+}
+
+message NoteFieldDefinitionPayload {
+  string field_key = 1;
+  string label = 2;
+  string field_type = 3;
+  int32 sort_order = 4;
+  bool required = 5;
+  bool archived = 6;
+}
+
+message CardTemplatePayload {
+  string id = 1;
+  string template_key = 2;
+  string name = 3;
+  string front_template = 4;
+  string back_template = 5;
+  int32 sort_order = 6;
+  bool enabled = 7;
+}
+
+message NoteTypePayload {
+  string id = 1;
+  string project_id = 2;
+  string name = 3;
+  int32 version = 4;
+  repeated NoteFieldDefinitionPayload fields = 5;
+  repeated CardTemplatePayload templates = 6;
+}
+
+message NotePayload {
+  string id = 1;
+  string note_type_id = 2;
+  map<string, NoteFieldValuePayload> field_values = 3;
+  google.protobuf.StringValue project_term_id = 4;
+}
+
+message GetNoteTypeForEditorRequest {
+  string user_id = 1;
+  string project_id = 2;
+}
+
+message GetNoteTypeForEditorResponse {
+  NoteTypePayload note_type = 1;
+  CardTemplatePayload default_template = 2;
+}
+
+enum ContributionPolicy {
+  CONTRIBUTION_POLICY_OPEN = 0;
+  CONTRIBUTION_POLICY_RESTRICTED = 1;
+  CONTRIBUTION_POLICY_CLOSED = 2;
+}
+
+enum LicenseType {
+  LICENSE_TYPE_PRIVATE = 0;
+  LICENSE_TYPE_FREE_ATTRIBUTION = 1;
+  LICENSE_TYPE_COMMERCIAL = 2;
+  LICENSE_TYPE_COMMERCIAL_DERIVATIVE = 3;
+}
+
+message SrsSettings {
+  double request_retention = 1;
+  int32 maximum_interval = 2;
+  repeated double w = 3; // Веса FSRS
+  bool enable_short_term = 4;
+  // Как в Anki: длительности шагов learning/relearning (секунды) и fuzz для интервалов
+  repeated int32 learning_steps_seconds = 5;   // напр. 60, 600 — 1 мин, 10 мин
+  repeated int32 relearning_steps_seconds = 6; // напр. 600 — 10 мин
+  bool enable_fuzzing = 7;                     // по умолчанию true в клиентах / БД
+}
+
+message TtsSettings {
+  string voice_name = 1;   // Browser voice name, e.g. "Google US English"
+  double rate = 2;          // Speech rate 0.1–10.0 (default 1.0)
+  double pitch = 3;         // Speech pitch 0.0–2.0 (default 1.0)
+}
+
+message ProjectStats {
+  int32 total_lemmas = 1;
+  int32 mature_lemmas = 2;
+}
+
+// ============================================================================
+// Project Messages
+// ============================================================================
+
+message ProjectResponse {
+  string id = 1; // UUID
+  string user_id = 2; // UUID
+  string title = 3;
+  string source_lang = 4;
+  string target_lang = 5;
+  SrsSettings settings = 6;
+  ProjectStats stats = 7;
+  bool is_archived = 8;
+  google.protobuf.Timestamp created_at = 9;
+  TtsSettings tts_settings = 10;
+}
+
+message CreateProjectRequest {
+  string user_id = 1; // UUID
+  string title = 2;
+  string source_lang = 3;
+  string target_lang = 4;
+  SrsSettings settings = 5; // Optional
+  TtsSettings tts_settings = 6; // Optional
+}
+
+message GetProjectsRequest {
+  string user_id = 1; // UUID
+  bool include_archived = 2;
+}
+
+message GetProjectsResponse {
+  repeated ProjectResponse projects = 1;
+}
+
+message GetProjectDetailsRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+}
+
+message UpdateProjectRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  
+  // Wrappers используются для возможности передать null (не обновлять поле)
+  google.protobuf.StringValue title = 3;
+  google.protobuf.BoolValue is_archived = 4;
+  SrsSettings settings = 5; 
+  TtsSettings tts_settings = 6;
+}
+
+message DeleteProjectRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+}
+
+message GetUserUsageStatsRequest {
+  string user_id = 1; // UUID
+}
+
+message GetUserUsageStatsResponse {
+  int32 projects_used = 1;
+  int32 cards_used = 2;
+  int32 ai_requests_today_used = 3;
+  int32 books_used = 4;
+}
+
+// ============================================================================
+// User Settings Messages
+// ============================================================================
+
+message UserSettingsResponse {
+  string user_id = 1; // UUID
+  int32 rollover_hour = 2;
+  int32 daily_goal_new = 3;
+  int32 daily_goal_review = 4;
+  string interface_language = 5;
+  int32 current_streak = 6;
+  int32 max_streak = 7;
+}
+
+message GetUserSettingsRequest {
+  string user_id = 1; // UUID
+}
+
+message UpdateUserSettingsRequest {
+  string user_id = 1; // UUID
+  
+  google.protobuf.Int32Value rollover_hour = 2;
+  google.protobuf.Int32Value daily_goal_new = 3;
+  google.protobuf.Int32Value daily_goal_review = 4;
+  google.protobuf.StringValue interface_language = 5;
+}
+
+// ============================================================================
+// Deck Messages
+// ============================================================================
+
+message DeckResponse {
+  string id = 1; // UUID
+  string project_id = 2; // UUID
+  google.protobuf.StringValue parent_deck_id = 3; // UUID, nullable
+  string owner_id = 4; // UUID
+  string title = 5;
+  google.protobuf.StringValue description = 6; // nullable
+  google.protobuf.StringValue cover_image_url = 7; // nullable
+  bool is_public = 8;
+  ContributionPolicy contribution_policy = 9;
+  LicenseType license_type = 10;
+  google.protobuf.StringValue forked_from_id = 11; // UUID, nullable
+  int32 card_count = 12;
+  google.protobuf.Timestamp created_at = 13;
+}
+
+message DeckTreeItem {
+  string id = 1; // UUID
+  string title = 2;
+  int32 card_count = 3;
+  repeated DeckTreeItem children = 4; // Рекурсивная вложенность
+  string owner_id = 5; // UUID, для фильтра «Мои»
+  bool is_public = 6; // для фильтра «Публичные»
+  string forked_from_id = 7; // UUID, пусто если не скачано/не куплено; для фильтра «Скачанные» и бейджа Purchased
+  string cover_image_url = 8; // URL обложки
+  DeckDetailStats stats = 9; // Статистика карточек для текущего пользователя
+}
+
+// Фильтр библиотеки: Мои / Скачанные / Публичные
+enum LibraryFilter {
+  LIBRARY_FILTER_UNSPECIFIED = 0;
+  MINE = 1;       // OwnerId == userId
+  DOWNLOADED = 2; // ForkedFromId != null
+  PUBLIC = 3;    // IsPublic == true
+}
+
+message GetDeckTreeRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  LibraryFilter library_filter = 3; // опционально: фильтр для Library
+}
+
+message GetDeckTreeResponse {
+  repeated DeckTreeItem root_decks = 1;
+}
+
+message GetDeckDetailRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+}
+
+message DeckDetailStats {
+  int32 new_cards_count = 1;
+  int32 learning_cards_count = 2;
+  int32 due_cards_count = 3;
+  int32 total_cards_count = 4;
+  int32 studyable_now_count = 5;
+}
+
+message GetDeckDetailResponse {
+  string id = 1; // UUID
+  string title = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.StringValue parent_deck_id = 4; // UUID, nullable
+  DeckDetailStats stats = 5;
+  string project_id = 6; // UUID
+  string owner_id = 7; // UUID
+  string cover_image_url = 8;
+  bool is_public = 9;
+  string contribution_policy = 10; // OPEN, RESTRICTED, CLOSED
+  string license_type = 11; // PRIVATE, FREE_ATTRIBUTION, etc.
+  string forked_from_id = 12; // UUID, empty if not forked
+  google.protobuf.Timestamp created_at = 13;
+  int32 card_count = 14;
+}
+
+message CreateDeckRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  google.protobuf.StringValue parent_deck_id = 3; // UUID (Optional)
+  string title = 4;
+  google.protobuf.StringValue description = 5;
+  bool is_public = 6;
+  google.protobuf.StringValue cover_image_url = 7; // Optional
+}
+
+message UpdateDeckRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  
+  google.protobuf.StringValue title = 3;
+  google.protobuf.StringValue description = 4;
+  google.protobuf.StringValue parent_deck_id = 5; // UUID
+  google.protobuf.StringValue cover_image_url = 6;
+  google.protobuf.BoolValue is_public = 7;
+  
+  // Для enum в proto3 нет стандартного Wrapper, 
+  // используем oneof или специальное значение (например -1) для "не менять",
+  // либо кастомный Wrapper. Здесь для простоты используем поле + маску или считаем, 
+  // что 0 - это дефолт, но это опасно для Enum.
+  // Лучшая практика gRPC для опциональных enum - использовать oneof.
+  
+  oneof policy_update {
+      ContributionPolicy contribution_policy = 8;
+  }
+
+  oneof license_update {
+      LicenseType license_type = 9;
+  }
+}
+
+message DeleteDeckRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+}
+
+// ============================================================================
+// Card Messages
+// ============================================================================
+
+message CardResponse {
+  string id = 1; // UUID
+  string deck_id = 2; // UUID
+  string creator_id = 3; // UUID
+  SrsStatus srs_status = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.StringValue project_term_id = 6;
+  NotePayload note = 7;
+  CardTemplatePayload active_card_template = 8;
+  SrsState srs_state = 9;
+}
+
+message CreateCardRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  map<string, NoteFieldValuePayload> field_values = 3;
+}
+
+message CheckCardDuplicatesRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  string term_text = 3;
+}
+
+message CheckCardDuplicatesResponse {
+  bool is_duplicate = 1;
+  repeated CardPreview existing_cards = 2;
+  google.protobuf.StringValue normalized_surface = 3;
+}
+
+message CaptureCardRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  map<string, NoteFieldValuePayload> field_values = 3;
+  google.protobuf.StringValue screenshot_base64 = 4;
+  // When unset or empty, capture uses the project "Inbox" deck (same as legacy behavior).
+  google.protobuf.StringValue deck_id = 5; // UUID
+}
+
+message GetCardRequest {
+  string user_id = 1; // UUID
+  string card_id = 2; // UUID
+}
+
+message UpdateCardRequest {
+  string user_id = 1; // UUID
+  string card_id = 2; // UUID
+  map<string, NoteFieldValuePayload> field_values = 3;
+}
+
+message DeleteCardRequest {
+  string user_id = 1; // UUID
+  string card_id = 2; // UUID
+}
+
+message SearchCardsRequest {
+  string user_id = 1; // UUID
+  string query = 2;
+  google.protobuf.StringValue project_id = 3; // UUID
+  google.protobuf.StringValue deck_id = 4; // UUID
+  int32 page_number = 5;
+  int32 page_size = 6;
+  repeated SrsStatus srs_statuses = 7; // Фильтрация по статусу
+}
+
+message SearchCardsResponse {
+  repeated CardResponse items = 1;
+  int32 page_number = 2;
+  int32 total_pages = 3;
+  int32 total_count = 4;
+}
+
+message GetCardsByDeckRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  int32 page_number = 3;
+  int32 page_size = 4;
+}
+
+message GetCardsByDeckResponse {
+  repeated CardResponse items = 1;
+  int32 page_number = 2;
+  int32 total_pages = 3;
+  int32 total_count = 4;
+}
+
+message BulkCreateCardsRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  repeated CreateCardRequest cards = 3;
+}
+
+message BulkCreateCardsResponse {
+  repeated CardResponse created_cards = 1;
+}
+
+message StartImportJobRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  string document_id = 3; // UUID из MediaService
+  string file_name = 4;
+  string config_json = 5;
+}
+
+message StartImportJobResponse {
+  string job_id = 1; // UUID фоновой задачи
+}
+
+message GetImportJobStatusRequest {
+  string user_id = 1; // UUID
+  string job_id = 2; // UUID
+}
+
+message GetImportJobStatusResponse {
+  string job_id = 1;
+  string status = 2; // QUEUED, RUNNING, COMPLETED, FAILED
+  int32 total_rows = 3;
+  int32 processed_rows = 4;
+  google.protobuf.StringValue error_message = 5;
+}
+
+
+message CreateOrUpdateTermRequest {
+  string user_id = 1;
+  string project_id = 2;
+  string term_text = 3;
+  string type = 4;
+  string language = 5;
+  string status = 6; // NEW, SAVED (сохранённый термин; legacy LINGQ/LEARNING принимаются на бэкенде), KNOWN, IGNORED
+  google.protobuf.StringValue meaning = 7;
+  google.protobuf.StringValue first_sentence = 8;
+  google.protobuf.StringValue first_source_title = 9;
+  google.protobuf.StringValue first_source_url = 10;
+}
+
+message TermActionRequest {
+  string user_id = 1;
+  string project_id = 2;
+  string term_text = 3;
+  string type = 4;
+  string language = 5;
+}
+
+message BulkMarkKnownItem {
+  string term_text = 1;
+  string type = 2; // WORD or PHRASE
+}
+
+message BulkMarkKnownRequest {
+  string user_id = 1;
+  string project_id = 2;
+  repeated string term_texts = 3; // legacy: treated as WORD
+  string language = 4;
+  repeated BulkMarkKnownItem items = 5;
+}
+
+message BulkMarkKnownResponse {
+  int32 updated_count = 1;
+}
+
+message GetTermDetailsRequest {
+  string user_id = 1;
+  string project_id = 2;
+  string term_text = 3;
+  string type = 4;
+}
+
+message SearchTermDuplicatesRequest {
+  string user_id = 1;
+  string project_id = 2;
+  string term_text = 3;
+  string type = 4;
+}
+
+message TermDetailsResponse {
+  string term_id = 1;
+  string project_id = 2;
+  string term_text = 3;
+  string normalized_text = 4;
+  string type = 5;
+  string language = 6;
+  string status = 7;
+  google.protobuf.StringValue meaning = 8;
+  google.protobuf.StringValue first_sentence = 9;
+  google.protobuf.StringValue first_source_title = 10;
+  google.protobuf.StringValue first_source_url = 11;
+  repeated CardPreview related_cards = 12;
+  int32 reading_level = 13;
+  int32 listening_level = 14;
+  int32 writing_level = 15;
+  int32 speaking_level = 16;
+}
+
+message SearchTermDuplicatesResponse {
+  bool is_duplicate = 1;
+  string normalized_text = 2;
+  repeated TermDetailsResponse matching_terms = 3;
+  repeated CardPreview existing_cards = 4;
+}
+
+message ListProjectTermsRequest {
+  string user_id = 1;
+  string project_id = 2;
+  // Пустая строка = без фильтра. SAVED включает legacy LINGQ/LEARNING в БД.
+  string status = 3;
+  string type = 4; // WORD | PHRASE, пусто = все
+  string q = 5; // подстрока по Text / NormalizedText (без регистра где поддерживается)
+  int32 page_number = 6; // начиная с 1
+  int32 page_size = 7; // 0 → 50; макс. 100 на сервере
+}
+
+message ProjectTermListItem {
+  string term_id = 1;
+  string text = 2;
+  string normalized_text = 3;
+  string type = 4;
+  string language = 5;
+  string status = 6; // NEW, SAVED, KNOWN, IGNORED (LINGQ/LEARNING → SAVED)
+  google.protobuf.StringValue meaning = 7;
+  google.protobuf.StringValue first_sentence = 8;
+  google.protobuf.StringValue first_source_title = 9;
+  google.protobuf.StringValue first_source_url = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  int32 related_card_count = 12;
+  int32 reading_level = 13;
+  int32 listening_level = 14;
+  int32 writing_level = 15;
+  int32 speaking_level = 16;
+}
+
+message ListProjectTermsResponse {
+  repeated ProjectTermListItem items = 1;
+  int32 total_count = 2;
+}
+
+message PurgeDemoImportRequest {
+  string user_id = 1;
+  string project_id = 2;
+}
+
+message PurgeDemoImportResponse {
+  int32 cards_deleted = 1;
+  int32 statuses_deleted = 2;
+  int32 terms_deleted = 3;
+}
+
+message SuspendCardRequest {
+  string user_id = 1; // UUID
+  string card_id = 2; // UUID
+}
+
+message UnsuspendCardRequest {
+  string user_id = 1; // UUID
+  string card_id = 2; // UUID
+}
+
+message BulkDeleteCardsRequest {
+  string user_id = 1; // UUID
+  repeated string card_ids = 2; // UUIDs
+}
+
+message MoveCardsRequest {
+  string user_id = 1; // UUID
+  repeated string card_ids = 2; // UUIDs
+  string deck_id = 3; // UUID
+}
+
+message ResetCardProgressRequest {
+  string user_id = 1; // UUID
+  repeated string card_ids = 2; // UUIDs
+}
+
+message GetLeechCardsRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  int32 threshold = 3; // default 8
+  int32 page_number = 4;
+  int32 page_size = 5;
+}
+
+message GetLeechCardsResponse {
+  repeated CardResponse items = 1;
+  int32 page_number = 2;
+  int32 total_pages = 3;
+  int32 total_count = 4;
+}
+
+message GetCardsMissingMediaRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  string media_type = 3; // "image", "audio", or empty for both
+  int32 page_number = 4;
+  int32 page_size = 5;
+}
+
+message GetCardsMissingMediaResponse {
+  repeated CardResponse items = 1;
+  int32 page_number = 2;
+  int32 total_pages = 3;
+  int32 total_count = 4;
+}
+
+message CardPreview {
+  string id = 1; // UUID
+  NotePayload note = 2;
+  SrsStatus srs_status = 3;
+  bool has_audio = 4;
+  string deck_title = 5;
+}
+
+message GetCardPreviewsRequest {
+  string user_id = 1; // UUID
+  repeated string card_ids = 2; // Список UUID
+}
+
+message GetCardPreviewsResponse {
+  repeated CardPreview previews = 1;
+}
+
+message UploadImageRequest {
+  bytes image_data = 1;
+  string content_type = 2; // e.g. image/png, image/jpeg; optional, default image/png
+}
+
+message UploadImageResponse {
+  string url = 1; // Public or presigned URL for the uploaded image
+  string image_id = 2; // UUID of the uploaded image (for serve-image via Aggregator)
+}
+
+message UploadDocumentRequest {
+  bytes document_data = 1;
+  string content_type = 2; // expected application/pdf
+  string file_name = 3;
+}
+
+message UploadDocumentResponse {
+  string url = 1; // Public or presigned URL for the uploaded document
+  string document_id = 2; // UUID of the uploaded document
+}
+
+message GetImageUrlRequest {
+  string image_id = 1; // UUID
+}
+
+message GetImageUrlResponse {
+  string url = 1;
+}
+
+// ============================================================================
+// Study Service Messages
+// ============================================================================
+
+message StartStudySessionRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  google.protobuf.StringValue deck_id = 3; // UUID, optional
+}
+
+message StartStudySessionResponse {
+  string session_id = 1; // UUID
+  string project_id = 2; // UUID
+  string status = 3; // ACTIVE, COMPLETED
+  google.protobuf.Timestamp start_time = 4;
+  int32 cards_reviewed = 5;
+  QueueStats queue_stats = 6;
+}
+
+message QueueStats {
+  int32 new = 1;
+  int32 review = 2;
+  int32 learning = 3;
+}
+
+message GetNextCardRequest {
+  string user_id = 1; // UUID
+  string session_id = 2; // UUID
+}
+
+message GetNextCardResponse {
+  CardStudyDto card = 1;
+}
+
+message CardStudyDto {
+  string id = 1; // UUID
+  string type = 2; // SENTENCE_MINING
+  CardStudyContent content = 3;
+  // Derived from note fields SourceTitle + SourceUrl when present (no separate study persistence).
+  SourceMeta source_meta = 4;
+  CardMedia media = 5;
+  SrsState srs_state = 6;
+  map<int32, string> next_intervals = 7;
+  int32 siblings_count = 8;
+}
+
+message CardStudyContent {
+  NotePayload note = 1;
+  TargetIndex target_index = 2;
+}
+
+message SrsState {
+  SrsStatus state = 1;
+  int32 current_interval = 2; // days
+  int32 step = 3;
+  google.protobuf.Timestamp due_utc = 4;
+  int32 lapses = 5;
+  double stability = 6;
+  double difficulty = 7;
+  int32 scheduled_days = 8;
+  int32 elapsed_days = 9;
+}
+
+message AnswerValidationResult {
+  bool is_correct = 1;
+  bool is_fuzzy_match = 2;
+  google.protobuf.StringValue matched_synonym = 3;
+  double similarity_score = 4;
+  google.protobuf.StringValue suggestion = 5;
+}
+
+message SubmitReviewRequest {
+  string user_id = 1; // UUID
+  string session_id = 2; // UUID
+  string card_id = 3; // UUID
+  int32 rating = 4; // 1=Again, 2=Hard, 3=Good, 4=Easy
+  int32 duration_ms = 5;
+  google.protobuf.StringValue user_answer = 6; // Опциональный текстовый ответ пользователя
+}
+
+message SubmitReviewResponse {
+  string card_id = 1; // UUID
+  google.protobuf.Timestamp next_review_date = 2;
+  string interval = 3; // e.g., "3d", "2w"
+  SrsStatus state = 4;
+  double stability = 5;
+  bool is_leech = 6;
+  int32 buried_siblings_count = 7;
+  AnswerValidationResult answer_validation = 8; // Результат проверки ответа (если user_answer был предоставлен)
+}
+
+message UndoReviewRequest {
+  string user_id = 1; // UUID
+  string session_id = 2; // UUID
+}
+
+message UndoReviewResponse {
+  bool success = 1;
+  string restored_card_id = 2; // UUID
+  string message = 3;
+}
+
+// ============================================================================
+// Analytics Service (SR-ANL-01, SR-ANL-02, SR-ANL-03)
+// ============================================================================
+
+service AnalyticsService {
+  // --------------------------------------------------------------------------
+  // Analytics (SR-ANL-01, SR-ANL-02, SR-ANL-03)
+  // --------------------------------------------------------------------------
+
+  // Оценка словарного запаса (SR-ANL-01)
+  rpc GetVocabularyStats (GetVocabularyStatsRequest) returns (GetVocabularyStatsResponse);
+
+  // Календарь активности (SR-ANL-02)
+  rpc GetHeatmap (GetHeatmapRequest) returns (GetHeatmapResponse);
+
+  // Дневная сводка и Streaks (SR-ANL-03)
+  rpc GetDailySummary (GetDailySummaryRequest) returns (GetDailySummaryResponse);
+
+  // Оценка навыков (Phase 2 - Deep Skill Tracking)
+  rpc GetSkillBalance (GetSkillBalanceRequest) returns (GetSkillBalanceResponse);
+
+  // Ежедневный автопилот (Phase 4)
+  rpc GetDailyAutopilotPlan (GetDailyAutopilotPlanRequest) returns (GetDailyAutopilotPlanResponse);
+
+  // Трекинг активности пользователя по скиллу (Phase 4)
+  rpc TrackSkillActivity (TrackSkillActivityRequest) returns (TrackSkillActivityResponse);
+
+  // История оценки навыков
+  rpc GetSkillAssessmentHistory (GetSkillAssessmentHistoryRequest) returns (GetSkillAssessmentHistoryResponse);
+}
+
+// SR-ANL-01: Vocabulary Stats Messages
+message GetVocabularyStatsRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+}
+
+message CefrLevel {
+  string code = 1; // A1, A2, B1, B2, C1, C2
+  string title = 2; // "Beginner", "Elementary", etc.
+  int32 progress_percent = 3; // 0-100
+  int32 words_to_next_level = 4;
+}
+
+message GetVocabularyStatsResponse {
+  string project_id = 1; // UUID
+  int32 total_lemmas = 2;
+  int32 mature_count = 3;
+  int32 learning_count = 4;
+  int32 new_count = 5;
+  CefrLevel cefr_level = 6;
+  int32 estimated_fluency = 7; // 0-100
+  int32 saved_count = 8;
+  int32 reviewing_count = 9;
+}
+
+// Phase 2: Skill Balance Messages
+message GetSkillBalanceRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+}
+
+message GetSkillBalanceResponse {
+  string project_id = 1; // UUID
+  int32 average_reading_level = 2; // 0-100
+  int32 average_listening_level = 3; // 0-100
+  int32 average_writing_level = 4; // 0-100
+  int32 average_speaking_level = 5; // 0-100
+}
+
+// SR-ANL-02: Heatmap Messages
+message GetHeatmapRequest {
+  string user_id = 1; // UUID
+  google.protobuf.StringValue project_id = 2; // UUID (Optional, null = all projects)
+  int32 year = 3; // e.g., 2025
+}
+
+message ActivityDay {
+  int32 count = 1; // Number of reviews
+  int32 level = 2; // Intensity level 1-4
+}
+
+message GetHeatmapResponse {
+  google.protobuf.StringValue project_id = 1; // UUID (null if all projects)
+  int32 year = 2;
+  int32 total_reviews = 3;
+  int32 longest_streak = 4;
+  map<string, ActivityDay> activity = 5; // Date string (YYYY-MM-DD) -> ActivityDay
+  int32 total_time_spent_seconds = 6; // Сумма времени изучения за год (секунды)
+}
+
+// SR-ANL-03: Daily Summary Messages
+message GetDailySummaryRequest {
+  string user_id = 1; // UUID
+  google.protobuf.Int32Value timezone_offset = 2; // Minutes offset from UTC (Optional)
+}
+
+message GoalProgress {
+  int32 current = 1;
+  int32 target = 2;
+  bool is_completed = 3;
+}
+
+message GetDailySummaryResponse {
+  string date = 1; // YYYY-MM-DD
+  int32 current_streak = 2;
+  bool is_streak_extended_today = 3;
+  int32 time_spent_seconds = 4;
+  GoalProgress new_cards = 5;
+  GoalProgress reviews = 6;
+}
+
+// ============================================================================
+// Community Service (SR-COL, SR-PUB, SR-MKT)
+// ============================================================================
+
+service CommunityService {
+  // --------------------------------------------------------------------------
+  // Contributions (SR-COL-01 до SR-COL-08)
+  // --------------------------------------------------------------------------
+
+  // Создание предложения (SR-COL-01)
+  rpc CreateContribution (CreateContributionRequest) returns (CreateContributionResponse);
+
+  // Получение списка предложений (SR-COL-03)
+  rpc GetContributions (GetContributionsRequest) returns (GetContributionsResponse);
+
+  // Получение предложения с Diff (SR-COL-03)
+  rpc GetContribution (GetContributionRequest) returns (GetContributionResponse);
+
+  // Принятие/Отклонение предложения (SR-COL-04)
+  rpc ResolveContribution (ResolveContributionRequest) returns (ResolveContributionResponse);
+
+  // Обновление политики вкладов (SR-COL-06)
+  rpc UpdateContributionPolicy (UpdateContributionPolicyRequest) returns (UpdateContributionPolicyResponse);
+
+  // --------------------------------------------------------------------------
+  // Publishing (SR-PUB-01 до SR-PUB-04)
+  // --------------------------------------------------------------------------
+
+  // Публикация колоды (SR-PUB-01)
+  rpc PublishDeck (PublishDeckRequest) returns (PublishDeckResponse);
+
+  // Клонирование колоды (SR-PUB-02)
+  rpc ForkDeck (ForkDeckRequest) returns (ForkDeckResponse);
+
+  // Получение опубликованных колод (SR-PUB-01)
+  rpc GetPublishedDecks (GetPublishedDecksRequest) returns (GetPublishedDecksResponse);
+
+  // Получение профиля автора (SR-PUB-04)
+  rpc GetAuthorProfile (GetAuthorProfileRequest) returns (GetAuthorProfileResponse);
+
+  // --------------------------------------------------------------------------
+  // Marketplace (SR-MKT-01 до SR-MKT-06)
+  // --------------------------------------------------------------------------
+
+  // Создание товара (SR-MKT-01)
+  rpc CreateProduct (CreateProductRequest) returns (CreateProductResponse);
+
+  // Обновление товара (SR-MKT-01)
+  rpc UpdateProduct (UpdateProductRequest) returns (UpdateProductResponse);
+
+  // Получение списка товаров (SR-MKT-01)
+  rpc GetProducts (GetProductsRequest) returns (GetProductsResponse);
+
+  // Получение деталей товара (SR-MKT-02)
+  rpc GetProductDetails (GetProductDetailsRequest) returns (GetProductDetailsResponse);
+
+  // Создание отзыва (SR-MKT-05)
+  rpc CreateReview (CreateReviewRequest) returns (CreateReviewResponse);
+
+  // Получение статистики товара (SR-MKT-06)
+  rpc GetProductStats (GetProductStatsRequest) returns (GetProductStatsResponse);
+
+  // Проверка прав доступа (SR-MKT-03, SR-COL-07)
+  rpc CheckEntitlement (CheckEntitlementRequest) returns (CheckEntitlementResponse);
+}
+
+// ============================================================================
+// Contributions Messages
+// ============================================================================
+
+message CreateContributionRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  google.protobuf.StringValue card_id = 3; // UUID (Optional, required for EDIT/DELETE)
+  string type = 4; // EDIT, ADD, DELETE
+  CardContent content = 5; // Required for EDIT/ADD
+  google.protobuf.StringValue comment = 6; // Optional
+}
+
+message CardContent {
+  map<string, NoteFieldValuePayload> field_values = 1;
+}
+
+message CreateContributionResponse {
+  string contribution_id = 1; // UUID
+}
+
+message GetContributionsRequest {
+  string user_id = 1; // UUID
+  google.protobuf.StringValue deck_id = 2; // UUID (Optional)
+  google.protobuf.StringValue status = 3; // PENDING, MERGED, REJECTED (Optional)
+  string role = 4; // AUTHOR (my contributions) or MODERATOR (deck owner)
+}
+
+message GetContributionsResponse {
+  repeated ContributionDto contributions = 1;
+}
+
+message ContributionDto {
+  string id = 1; // UUID
+  string target_deck_id = 2; // UUID
+  google.protobuf.StringValue target_card_id = 3; // UUID (Optional)
+  AuthorInfo author = 4;
+  string type = 5; // EDIT, ADD, DELETE
+  string status = 6; // PENDING, MERGED, REJECTED
+  CardContent content = 7; // Proposed content
+  google.protobuf.StringValue comment = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message AuthorInfo {
+  string user_id = 1; // UUID
+  string display_name = 2; // Optional, from user service
+}
+
+message GetContributionRequest {
+  string user_id = 1; // UUID
+  string contribution_id = 2; // UUID
+}
+
+message GetContributionResponse {
+  ContributionDto contribution = 1;
+  ContributionDiff diff = 2;
+}
+
+message ContributionDiff {
+  CardContent original_card = 1; // Null for ADD type
+  CardContent proposed_card = 2;
+  repeated string changed_fields = 3;
+  bool is_conflict = 4; // True if card was modified after contribution creation
+}
+
+message ResolveContributionRequest {
+  string user_id = 1; // UUID
+  string contribution_id = 2; // UUID
+  string status = 3; // MERGED or REJECTED
+  google.protobuf.StringValue resolution_comment = 4; // Optional
+}
+
+message ResolveContributionResponse {
+  bool success = 1;
+  google.protobuf.StringValue merged_card_id = 2; // UUID (for ADD type)
+}
+
+message UpdateContributionPolicyRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  string policy = 3; // OPEN, RESTRICTED, CLOSED
+}
+
+message UpdateContributionPolicyResponse {
+  bool success = 1;
+}
+
+// ============================================================================
+// Publishing Messages
+// ============================================================================
+
+message PublishDeckRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  string license_type = 3; // FREE or COMMERCIAL
+}
+
+message PublishDeckResponse {
+  string deck_id = 1; // UUID
+  bool is_public = 2;
+}
+
+message ForkDeckRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  string target_project_id = 3; // UUID
+  google.protobuf.StringValue new_title = 4; // Optional
+}
+
+message ForkDeckResponse {
+  string deck_id = 1; // UUID
+  google.protobuf.StringValue forked_from_id = 2; // UUID
+  string license_type = 3;
+}
+
+message GetPublishedDecksRequest {
+  string user_id = 1; // UUID
+  google.protobuf.StringValue author_id = 2; // UUID (Optional)
+  google.protobuf.StringValue search_query = 3; // Optional
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message GetPublishedDecksResponse {
+  repeated PublishedDeckDto decks = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message PublishedDeckDto {
+  string id = 1; // UUID
+  string project_id = 2; // UUID
+  string title = 3;
+  google.protobuf.StringValue description = 4;
+  google.protobuf.StringValue cover_image_url = 5;
+  AuthorInfo author = 6;
+  int32 card_count = 7;
+  string license_type = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message GetAuthorProfileRequest {
+  string user_id = 1; // UUID
+  string author_id = 2; // UUID
+}
+
+message GetAuthorProfileResponse {
+  string author_id = 1; // UUID
+  string display_name = 2;
+  int32 published_decks_count = 3;
+  int32 total_sales = 4;
+  double average_rating = 5;
+}
+
+// ============================================================================
+// Marketplace Messages
+// ============================================================================
+
+message CreateProductRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+  string title = 3;
+  google.protobuf.StringValue description_html = 4; // Optional
+  google.protobuf.StringValue cover_image_url = 5; // Optional
+  double price = 6;
+  string currency = 7; // ISO 4217 code (USD, EUR, etc.)
+}
+
+message CreateProductResponse {
+  string product_id = 1; // UUID
+}
+
+message UpdateProductRequest {
+  string user_id = 1; // UUID
+  string product_id = 2; // UUID
+  google.protobuf.StringValue title = 3; // Optional
+  google.protobuf.StringValue description_html = 4; // Optional
+  google.protobuf.StringValue cover_image_url = 5; // Optional
+  google.protobuf.DoubleValue price = 6; // Optional
+  google.protobuf.StringValue currency = 7; // Optional
+  google.protobuf.StringValue status = 8; // DRAFT, PUBLISHED, ARCHIVED (Optional)
+}
+
+message UpdateProductResponse {
+  string product_id = 1; // UUID
+}
+
+message GetProductsRequest {
+  string user_id = 1; // UUID
+  google.protobuf.StringValue author_id = 2; // UUID (Optional)
+  google.protobuf.StringValue search_query = 3; // Optional
+  google.protobuf.DoubleValue min_price = 4; // Optional
+  google.protobuf.DoubleValue max_price = 5; // Optional
+  int32 page = 6;
+  int32 page_size = 7;
+}
+
+message GetProductsResponse {
+  repeated ProductDto products = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ProductDto {
+  string id = 1; // UUID
+  string deck_id = 2; // UUID
+  AuthorInfo author = 3;
+  string title = 4;
+  google.protobuf.StringValue description_html = 5;
+  google.protobuf.StringValue cover_image_url = 6;
+  double price = 7;
+  string currency = 8;
+  string status = 9; // DRAFT, PUBLISHED, ARCHIVED
+  double average_rating = 10;
+  int32 review_count = 11;
+  int32 sales_count = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message GetProductDetailsRequest {
+  string user_id = 1; // UUID
+  string product_id = 2; // UUID
+}
+
+message GetProductDetailsResponse {
+  ProductDto product = 1;
+  repeated CardPreview deck_preview = 2; // First N cards for preview (SR-MKT-02)
+}
+
+message CreateReviewRequest {
+  string user_id = 1; // UUID
+  string product_id = 2; // UUID
+  int32 rating = 3; // 1-5
+  google.protobuf.StringValue comment = 4; // Optional
+}
+
+message CreateReviewResponse {
+  string review_id = 1; // UUID
+}
+
+message GetProductStatsRequest {
+  string user_id = 1; // UUID
+  string product_id = 2; // UUID
+}
+
+message GetProductStatsResponse {
+  string product_id = 1; // UUID
+  int32 sales_count = 2;
+  int32 reviews_count = 3;
+  double average_rating = 4;
+  google.protobuf.DoubleValue retention_rate = 5; // Optional
+}
+
+message CheckEntitlementRequest {
+  string user_id = 1; // UUID
+  string deck_id = 2; // UUID
+}
+
+message CheckEntitlementResponse {
+  bool has_access = 1;
+  string source = 2; // PURCHASE, CONTRIBUTION, FREE
+  google.protobuf.Timestamp granted_at = 3;
+}
+
+// ============================================================================
+// Sync Service (SR-SNC-01, SR-SNC-03)
+// ============================================================================
+
+service SyncService {
+  // --------------------------------------------------------------------------
+  // Synchronization (SR-SNC-01, SR-SNC-03)
+  // --------------------------------------------------------------------------
+
+  // Получение дельты изменений (SR-SNC-01)
+  rpc SyncData (SyncDataRequest) returns (SyncDataResponse);
+
+  // Отправка офлайн-ответов (SR-SNC-03)
+  rpc BatchSubmitReviews (BatchSubmitReviewsRequest) returns (BatchSubmitReviewsResponse);
+}
+
+// SR-SNC-01: Sync Data Messages
+message SyncDataRequest {
+  string user_id = 1; // UUID
+  google.protobuf.Timestamp last_sync_token = 2; // Timestamp последней синхронизации
+  google.protobuf.StringValue project_id = 3; // UUID (Optional, null = all projects)
+}
+
+message SyncChanges {
+  repeated SyncDeck decks = 1; // Измененные колоды
+  repeated SyncCard cards = 2; // Измененные карточки
+  repeated UserCardProgressDto progress = 3; // Измененный прогресс
+}
+
+// Упрощенные типы для синхронизации
+message SyncDeck {
+  string id = 1; // UUID
+  string project_id = 2; // UUID
+  google.protobuf.StringValue parent_deck_id = 3; // UUID, nullable
+  string owner_id = 4; // UUID
+  string title = 5;
+  google.protobuf.StringValue description = 6; // nullable
+  google.protobuf.StringValue cover_image_url = 7; // nullable
+  bool is_public = 8;
+  ContributionPolicy contribution_policy = 9;
+  LicenseType license_type = 10;
+  google.protobuf.StringValue forked_from_id = 11; // UUID, nullable
+  int32 card_count = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14; // Для синхронизации
+}
+
+message SyncCard {
+  string id = 1; // UUID
+  string deck_id = 2; // UUID
+  string creator_id = 3; // UUID
+  string note_id = 4; // UUID
+  map<string, NoteFieldValuePayload> field_values = 5;
+  string search_document = 6;
+  google.protobuf.StringValue project_term_id = 7; // UUID
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message DeletedObjectInfo {
+  string entity_id = 1; // UUID
+  string entity_type = 2; // DECK, CARD, PROJECT
+}
+
+message SyncDataResponse {
+  google.protobuf.Timestamp sync_token = 1; // Новый токен синхронизации
+  bool requires_full_sync = 2; // Флаг принудительной полной перезагрузки
+  SyncChanges changes = 3;
+  repeated DeletedObjectInfo deleted_objects = 4; // Tombstones
+  bool has_more = 5; // Есть ли еще данные для синхронизации
+}
+
+// UserCardProgressDto для синхронизации
+message UserCardProgressDto {
+  string card_id = 1; // UUID
+  string project_id = 2; // UUID
+  int32 state = 3; // 0=NEW, 1=LEARNING, 2=REVIEW, 3=MATURE
+  float stability = 4;
+  float difficulty = 5;
+  google.protobuf.Timestamp due = 6;
+  int32 elapsed_days = 7;
+  int32 scheduled_days = 8;
+  int32 reps = 9;
+  int32 lapses = 10;
+  bool is_suspended = 11;
+  google.protobuf.Timestamp last_review = 12;
+}
+
+// SR-SNC-03: Batch Submit Reviews Messages
+message BatchSubmitReviewsRequest {
+  string user_id = 1; // UUID
+  repeated BatchReviewItem reviews = 2;
+}
+
+message BatchReviewItem {
+  string card_id = 1; // UUID
+  int32 rating = 2; // 1-4 (Again, Hard, Good, Easy)
+  google.protobuf.Timestamp reviewed_at = 3; // Время ответа (для офлайн-режима)
+  int32 duration_ms = 4; // Длительность ответа в миллисекундах
+  google.protobuf.StringValue session_id = 5; // UUID (Optional)
+  google.protobuf.StringValue user_answer = 6; // Optional (для валидации)
+}
+
+message BatchSubmitReviewsResponse {
+  int32 processed_count = 1; // Количество успешно обработанных ревью
+  int32 failed_count = 2; // Количество неудачных ревью
+  repeated string failed_card_ids = 3; // ID карточек, которые не удалось обработать
+}
+
+// ============================================================================
+// 7. AIService (AI Tools) - SR-AI-01, SR-AI-02
+// ============================================================================
+
+service AIService {
+  // --------------------------------------------------------------------------
+  // AI Context Generation (SR-AI-01)
+  // --------------------------------------------------------------------------
+
+  // Генерация примеров предложений с заданным словом (SR-AI-01)
+  rpc GenerateContext (GenerateContextRequest) returns (GenerateContextResponse);
+
+  // --------------------------------------------------------------------------
+  // Grammar Explanation (SR-AI-02)
+  // --------------------------------------------------------------------------
+
+  // Объяснение грамматики для конкретной фразы (SR-AI-02)
+  rpc ExplainGrammar (ExplainGrammarRequest) returns (ExplainGrammarResponse);
+}
+
+// SR-AI-01: Generate Context Messages
+message GenerateContextRequest {
+  string user_id = 1; // UUID
+  string target_word = 2; // Целевое слово для генерации примеров
+  string language = 3; // Код языка (ISO 639-1), например "en"
+  string user_level = 4; // Уровень пользователя (CEFR): A1, A2, B1, B2, C1, C2
+  int32 count = 5; // Количество примеров (обычно 3-5)
+}
+
+message ContextSuggestion {
+  string sentence = 1; // Предложение с целевым словом
+  string translation = 2; // Перевод предложения
+  string target_word = 3; // Целевое слово (может отличаться от исходного из-за склонений)
+  TargetIndex target_index = 4; // Позиция целевого слова в предложении
+}
+
+message GenerateContextResponse {
+  repeated ContextSuggestion suggestions = 1; // Массив предложений
+}
+
+// SR-AI-02: Explain Grammar Messages
+message ExplainGrammarRequest {
+  string user_id = 1; // UUID
+  string sentence = 2; // Предложение для анализа
+  string target_word = 3; // Целевое слово, для которого нужно объяснение
+  string user_native_language = 4; // Родной язык пользователя (ISO 639-1), например "ru"
+  google.protobuf.StringValue context_prompt = 5; // Опциональный дополнительный контекст
+}
+
+message ExplainGrammarResponse {
+  string explanation = 1; // Текст объяснения грамматики
+  google.protobuf.StringValue related_topic = 2; // Связанная тема (например, "Passé Composé")
+}
+
+// ============================================================================
+// 8. TextService (Text Analysis) - SR-TXT-01
+// ============================================================================
+
+service TextService {
+  // --------------------------------------------------------------------------
+  // Text Tokenization & Analysis (SR-TXT-01)
+  // --------------------------------------------------------------------------
+
+  // Токенизация и анализ текста (SR-TXT-01)
+  rpc AnalyzeText (AnalyzeTextRequest) returns (AnalyzeTextResponse);
+}
+
+// SR-TXT-01: Analyze Text Messages
+message AnalyzeTextRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID проекта
+  string text = 3; // Текст для анализа
+}
+
+enum TokenStatus {
+  TOKEN_STATUS_NEW = 0; // Новое слово (не в словаре)
+  TOKEN_STATUS_LEARNING = 1; // Слово в процессе изучения
+  TOKEN_STATUS_KNOWN = 2; // Выученное слово
+  TOKEN_STATUS_IGNORED = 3; // Игнорируемый термин
+}
+
+enum TokenType {
+  TOKEN_TYPE_WORD = 0; // Слово
+  TOKEN_TYPE_SPACE = 1; // Пробел
+  TOKEN_TYPE_PUNCTUATION = 2; // Знак препинания
+}
+
+message TextToken {
+  reserved 2;
+  string text = 1; // Исходный текст токена
+  TokenStatus status = 3; // Статус слова (NEW, LEARNING, KNOWN, IGNORED)
+  TokenType type = 4; // Тип токена (WORD, SPACE, PUNCTUATION)
+  google.protobuf.StringValue term_text = 5; // Нормализованная реальная форма
+  google.protobuf.StringValue project_term_id = 6; // UUID ProjectTerm when tracked
+}
+
+message TextPhrase {
+  int32 start_index = 1;
+  int32 end_index = 2;
+  string text = 3;
+  TokenStatus status = 4;
+  google.protobuf.StringValue project_term_id = 5;
+}
+
+message TextAnalysisStats {
+  int32 unique_words = 1; // Количество уникальных слов
+  double known_percentage = 2; // Процент знакомых слов (0.0 - 1.0)
+  int32 new_words_count = 3; // Количество новых слов
+  int32 learning_words_count = 4; // Количество слов в процессе изучения
+  int32 known_words_count = 5; // Количество выученных слов
+}
+
+message AnalyzeTextResponse {
+  repeated TextToken tokens = 1; // Массив токенов для рендеринга
+  TextAnalysisStats stats = 2; // Статистика анализа
+  repeated TextPhrase phrases = 3; // Сохранённые фразы (приоритет над отдельными словами)
+}
+
+// ============================================================================
+// 9. AutonomyService (SR-AUTO-01..06)
+// ============================================================================
+
+service AutonomyService {
+  rpc GetDailyAutopilot (GetDailyAutopilotRequest) returns (GetDailyAutopilotResponse);
+  rpc GetNextBestActions (GetNextBestActionsRequest) returns (GetNextBestActionsResponse);
+}
+
+message GetDailyAutopilotRequest {
+  string user_id = 1;
+  string project_id = 2;
+  google.protobuf.StringValue deck_id = 3;
+}
+
+message NextBestAction {
+  string id = 1;
+  string type = 2;
+  string title = 3;
+  string description = 4;
+  int32 priority = 5;
+  google.protobuf.StringValue deck_id = 6;
+}
+
+message GetDailyAutopilotResponse {
+  string user_id = 1;
+  string project_id = 2;
+  google.protobuf.StringValue deck_id = 3;
+  string plan_date = 4;
+  int32 suggested_minutes = 5;
+  int32 suggested_new_cards = 6;
+  int32 suggested_reviews = 7;
+  int32 backlog_risk_score = 8;
+  string session_mode = 9;
+  repeated NextBestAction next_best_actions = 10;
+}
+
+message GetNextBestActionsRequest {
+  string user_id = 1;
+  string project_id = 2;
+  google.protobuf.StringValue deck_id = 3;
+}
+
+message GetNextBestActionsResponse {
+  repeated NextBestAction actions = 1;
+}
+
+// ============================================================================
+// 10. SubscriptionService (Deck Subscriptions)
+// ============================================================================
+
+service SubscriptionService {
+  // Lists current user's deck subscriptions.
+  rpc ListSubscriptions (ListSubscriptionsRequest) returns (ListSubscriptionsResponse);
+
+  // Subscribes the current user to a deck.
+  rpc Subscribe (SubscribeRequest) returns (SubscriptionItemResponse);
+
+  // Unsubscribes the current user from a deck (idempotent).
+  rpc Unsubscribe (UnsubscribeRequest) returns (google.protobuf.Empty);
+}
+
+message ListSubscriptionsRequest {
+}
+
+message ListSubscriptionsResponse {
+  repeated SubscriptionItemResponse items = 1;
+}
+
+message SubscribeRequest {
+  string deck_id = 1; // UUID
+}
+
+message UnsubscribeRequest {
+  string deck_id = 1; // UUID
+}
+
+message SubscriptionItemResponse {
+  string deck_id = 1; // UUID
+  string project_id = 2; // UUID
+  string title = 3;
+  google.protobuf.Timestamp subscribed_at = 4;
+  google.protobuf.Timestamp last_accessed_at = 5;
+  int32 last_synced_version = 6;
+}
+
+// ============================================================================
+// End of VocabularyService gRPC contract
+// Agent persistence moved to AgentService (pvs.agent.grpc) — see AgentService/Protos/agent.proto
+// ============================================================================
+
+// ============================================================================
+// Lessons Module
+// ============================================================================
+
+message LessonDto {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string category = 4;
+  string difficulty = 5;
+  string content_markdown = 6;
+  google.protobuf.StringValue color_css_class = 7;
+  google.protobuf.StringValue system_prompt = 8;
+  string cefr_level = 9;
+  int32 order_index = 10;
+  google.protobuf.StringValue unlocks_after_lesson_id = 11;
+  string target_skills = 12;
+  int32 estimated_minutes = 13;
+}
+
+message UserLessonProgressDto {
+  string id = 1;
+  string user_id = 2;
+  string lesson_id = 3;
+  int32 status = 4;
+  google.protobuf.StringValue agent_thread_id = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+  int32 score_percent = 8;       // 0-100, set on completion
+  int32 time_spent_seconds = 9;  // total time spent in lesson
+}
+
+message LessonWithProgressDto {
+  LessonDto lesson = 1;
+  UserLessonProgressDto progress = 2; // nullable
+}
+
+message GetLessonsRequest {
+  string user_id = 1;
+}
+
+message GetLessonsResponse {
+  repeated LessonWithProgressDto lessons = 1;
+}
+
+message GetLessonRequest {
+  string lesson_id = 1;
+  string user_id = 2;
+}
+
+message GetLessonResponse {
+  LessonWithProgressDto lesson_with_progress = 1;
+}
+
+message StartLessonRequest {
+  string lesson_id = 1;
+  string user_id = 2;
+  string agent_thread_id = 3;
+}
+
+message StartLessonResponse {
+  UserLessonProgressDto progress = 1;
+}
+
+message CompleteLessonRequest {
+  string lesson_id = 1;
+  string user_id = 2;
+  int32 score_percent = 3;       // 0-100 result score (optional, 0 = not graded)
+  int32 time_spent_seconds = 4;  // session time in seconds (optional)
+}
+
+message SetPlacementLevelRequest {
+  string user_id = 1;
+  string cefr_level = 2; // e.g. A1, A2, B1, B2, C1, C2
+}
+
+// Phase 4: SubmitKnowledgeCheckResultRequest
+message SubmitKnowledgeCheckResultRequest {
+  string user_id = 1;
+  string project_id = 2;
+  repeated string term_ids = 3;
+  int32 reading_score = 4;
+  int32 listening_score = 5;
+  int32 writing_score = 6;
+  int32 speaking_score = 7;
+}
+
+// Phase 4: Autopilot
+message GetDailyAutopilotPlanRequest {
+  string user_id = 1;
+  string project_id = 2;
+}
+
+message DailyAutopilotTask {
+  string task_type = 1; // e.g. "reading", "fsrs", "knowledge_check"
+  string title = 2;
+  string description = 3;
+  bool is_completed = 4;
+  string action_url = 5;
+  int32 duration_minutes = 6;
+}
+
+message GetDailyAutopilotPlanResponse {
+  repeated DailyAutopilotTask tasks = 1;
+}
+
+message GetSkillAssessmentHistoryRequest {
+  string user_id = 1; // UUID
+  string project_id = 2; // UUID
+  int32 limit = 3; // optional, default 20
+}
+
+message SkillAssessmentLogDto {
+  string id = 1; // UUID
+  string skill = 2; // reading, listening, writing, speaking
+  int32 score = 3; // 0-100
+  string created_at = 4; // ISO 8601
+}
+
+message GetSkillAssessmentHistoryResponse {
+  repeated SkillAssessmentLogDto logs = 1;
+}
+
+// Phase 4: Skill Activity Tracking
+message TrackSkillActivityRequest {
+  string user_id      = 1; // UUID
+  string project_id   = 2; // UUID
+  int32  skill_type_id = 3; // FK → SkillTypes.Id (1=reading, 2=listening, 3=writing, 4=speaking)
+  int32  value        = 4; // minutes or exercises count to add
+}
+
+message TrackSkillActivityResponse {
+  int32 total_value_today = 1; // accumulated value for this skill today
+  bool  is_completed      = 2; // whether CompletionThreshold has been reached
+}

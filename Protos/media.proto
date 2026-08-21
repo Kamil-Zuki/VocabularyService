@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+option csharp_namespace = "Pvs.Media.Grpc";
+
+package media;
+
+service MediaService {
+  rpc UploadImage (UploadImageRequest) returns (UploadImageResponse);
+  rpc UploadAudio (UploadAudioRequest) returns (UploadAudioResponse);
+  rpc UploadDocument (UploadDocumentRequest) returns (UploadDocumentResponse);
+  rpc GetImageUrl (GetImageUrlRequest) returns (GetImageUrlResponse);
+  rpc GetAudioUrl (GetAudioUrlRequest) returns (GetAudioUrlResponse);
+  rpc GetDocumentUrl (GetDocumentUrlRequest) returns (GetDocumentUrlResponse);
+  rpc ListReaderLibraryBooks (ListReaderLibraryBooksRequest) returns (ListReaderLibraryBooksResponse);
+  rpc SaveReaderLibraryBook (SaveReaderLibraryBookRequest) returns (SaveReaderLibraryBookResponse);
+  rpc DeleteReaderLibraryBook (DeleteReaderLibraryBookRequest) returns (DeleteReaderLibraryBookResponse);
+}
+
+message UploadImageRequest {
+  bytes image_data = 1;
+  string content_type = 2;
+}
+
+message UploadImageResponse {
+  string url = 1;
+  string image_id = 2;
+}
+
+message UploadAudioRequest {
+  bytes audio_data = 1;
+  string content_type = 2;
+}
+
+message UploadAudioResponse {
+  string url = 1;
+  string audio_id = 2;
+}
+
+message UploadDocumentRequest {
+  bytes document_data = 1;
+  string content_type = 2;
+  string file_name = 3;
+}
+
+message UploadDocumentResponse {
+  string url = 1;
+  string document_id = 2;
+}
+
+message GetImageUrlRequest {
+  string image_id = 1;
+}
+
+message GetImageUrlResponse {
+  string url = 1;
+}
+
+message GetAudioUrlRequest {
+  string audio_id = 1;
+}
+
+message GetAudioUrlResponse {
+  string url = 1;
+}
+
+message GetDocumentUrlRequest {
+  string document_id = 1;
+}
+
+message GetDocumentUrlResponse {
+  string url = 1;
+}
+
+message ReaderLibraryBook {
+  string id = 1;
+  string title = 2;
+  string file_name = 3;
+  string url = 4;
+  string document_id = 5;
+  int32 page_count = 6;
+  string uploaded_at = 7;
+  string last_opened_at = 8;
+  string reading_mode = 16;
+  bool has_extracted_text = 17;
+  string cover_image_url = 18;
+  string audio_url = 19;
+  string cefr_level = 20;
+  string summary = 21;
+}
+
+message ListReaderLibraryBooksRequest {
+  string project_id = 1;
+}
+
+message ListReaderLibraryBooksResponse {
+  repeated ReaderLibraryBook books = 1;
+}
+
+message SaveReaderLibraryBookRequest {
+  string project_id = 1;
+  ReaderLibraryBook book = 2;
+}
+
+message SaveReaderLibraryBookResponse {
+  ReaderLibraryBook book = 1;
+}
+
+message DeleteReaderLibraryBookRequest {
+  string project_id = 1;
+  string book_id = 2;
+}
+
+message DeleteReaderLibraryBookResponse {}
